@@ -1,10 +1,16 @@
+module Counter(X : Binary_heap.Ordered) = struct
+  type t = X.t
+  let value = ref 0
+  let compare x y = incr value; X.compare x y
+end
 
 (* quick test of Binary_heap *)
 
-module E = struct
+module E = Counter(struct
   type t = int
   let compare = Stdlib.compare
-end
+end)
+let measure f = E.value := 0; f (); !E.value
 module H = Binary_heap.Make(E)
 
 let dummy = 1729
@@ -52,3 +58,30 @@ let () =
     if not (H.is_empty h) && Random.int 3 < 2 then H.remove h
   done;
   Format.eprintf "%d@." (H.length h)
+
+let rev_sorted arr =
+  let rec f i = i = Array.length arr ||
+                arr.(i - 1) >= arr.(i) && f (i + 1) in
+  f 1
+
+let () =
+  let size = ref 1 in
+  Format.printf "n,add,heapify,revsort,native,stable,exp,ratio@.";
+  while !size <= 1000000 do
+    let arr = Array.init !size (fun _ -> Random.int 1000) in
+    let add = measure (fun () ->
+      let h = H.create ~dummy 10 in
+      for i = 0 to !size - 1 do
+        H.add h arr.(i)
+      done
+    ) in
+    let heapify = measure (fun () -> ignore @@ H.heapify (Array.copy arr)) in
+    let native = measure (fun () -> Array.sort E.compare (Array.copy arr)) in
+    let stable = measure (fun () -> Array.stable_sort E.compare (Array.copy arr)) in
+    let revsort = measure (fun () -> H.rev_sort arr; assert (rev_sorted arr)) in
+    let log2 x = log x /. log 2. in
+    let expected = float !size *. log2 (float !size) in
+    Format.printf "%d,%d,%d,%d,%d,%d,%.0f,%.0f@." !size add heapify revsort
+      native stable expected (float revsort /. expected);
+    size := !size * 10
+  done
