@@ -80,12 +80,12 @@ module type H = sig
 
   val fold : (elt -> 'a -> 'a) -> t -> 'a -> 'a
 
-  (** [heapify arr] converts [arr] to a heap, in-place. More efficient than
-      calling [add] repeatedly. *)
-  val heapify : elt array -> t
+  (** [heapify ~dummy arr] converts [arr] to a heap, in-place. More efficient
+      than calling [add] repeatedly. *)
+  val heapify : dummy:elt -> elt array -> t
 
-  (** [rev_sort arr] sorts [arr] in the reverse order, in-place. *)
-  val rev_sort : elt array -> unit
+  (** [rev_sort ~dummy arr] sorts [arr] in the reverse order, in-place. *)
+  val rev_sort : dummy:elt -> elt array -> unit
 
 end
 

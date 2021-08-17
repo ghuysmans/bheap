@@ -78,7 +78,7 @@ let () =
     let heapify = measure (fun () -> ignore @@ H.heapify (Array.copy arr)) in
     let native = measure (fun () -> Array.sort E.compare (Array.copy arr)) in
     let stable = measure (fun () -> Array.stable_sort E.compare (Array.copy arr)) in
-    let revsort = measure (fun () -> H.rev_sort arr; assert (rev_sorted arr)) in
+    let revsort = measure (fun () -> H.rev_sort ~dummy:0 arr; assert (rev_sorted arr)) in
     let log2 x = log x /. log 2. in
     let expected = float !size *. log2 (float !size) in
     Format.printf "%d,%d,%d,%d,%d,%d,%.0f,%.0f@." !size add heapify revsort

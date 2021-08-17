@@ -68,12 +68,12 @@ module type H = sig
 
   val fold : (elt -> 'a -> 'a) -> t -> 'a -> 'a
 
-  (** [heapify arr] converts [arr] to a heap, in-place. More efficient than
-      calling [add] repeatedly. *)
-  val heapify : elt array -> t
+  (** [heapify ~dummy arr] converts [arr] to a heap, in-place. More efficient
+      than calling [add] repeatedly. *)
+  val heapify : dummy:elt -> elt array -> t
 
-  (** [rev_sort arr] sorts [arr] in the reverse order, in-place. *)
-  val rev_sort : elt array -> unit
+  (** [rev_sort ~dummy arr] sorts [arr] in the reverse order, in-place. *)
+  val rev_sort : dummy:elt -> elt array -> unit
 
 end
 
@@ -186,15 +186,15 @@ module Make(X : Ordered) : H with type elt = X.t = struct
     let rec foldrec x i = if i >= n then x else foldrec (f d.(i) x) (succ i) in
     foldrec x0 0
 
-  let heapify data =
+  let heapify ~dummy data =
     let n = Array.length data in
     for i = n/2 - 1 downto 0 do
       movedown data n i data.(i)
     done;
-    {size = n; data; dummy = data.(0); min_cap = n}
+    {size = n; data; dummy; min_cap = n}
 
-  let rev_sort data =
-    let {size; _} = heapify data in
+  let rev_sort ~dummy data =
+    let {size; _} = heapify ~dummy data in
     for n = size - 1 downto 0 do
       let tmp = data.(n) in
       data.(n) <- data.(0);
