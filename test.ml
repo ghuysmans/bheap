@@ -10,7 +10,12 @@ module E = Counter(struct
   type t = int
   let compare = Stdlib.compare
 end)
-let measure f = E.value := 0; f (); !E.value
+
+let measure f =
+  E.value := 0;
+  let x = f () in
+  !E.value, x
+
 module H = Binary_heap.Make(E)
 
 let dummy = 1729
@@ -59,27 +64,30 @@ let () =
   done;
   Format.eprintf "%d@." (H.length h)
 
-let rev_sorted arr =
-  let rec f i = i = Array.length arr ||
-                arr.(i - 1) >= arr.(i) && f (i + 1) in
-  f 1
+let rev arr =
+  let len = Array.length arr in
+  for i = 0 to len / 2 - 1 do
+    let tmp = arr.(i) in
+    arr.(i) <- arr.(len - i - 1);
+    arr.(len - i - 1) <- tmp
+  done
 
 let benchmark () =
   let size = ref 1 in
   Format.printf "n,add,heapify,revsort,native,stable,exp,ratio@.";
   while !size <= 1000000 do
     let arr = Array.init !size (fun _ -> Random.int 1000) in
-    let add = measure (fun () ->
+    let add, () = measure (fun () ->
       let h = H.create ~dummy 10 in
       for i = 0 to !size - 1 do
         H.add h arr.(i)
       done
     ) in
-    let heapify = measure (fun () -> ignore @@ H.heapify (Array.copy arr)) in
-    let native = measure (fun () -> Array.sort E.compare (Array.copy arr)) in
-    let stable = measure (fun () -> Array.stable_sort E.compare (Array.copy arr)) in
-    let revsort = measure (fun () -> H.rev_sort ~dummy:0 arr; assert (rev_sorted arr)) in
-    (* FIXME the empty list would pass this test *)
+    let heapify, _ = measure (fun () -> H.heapify (Array.copy arr)) in
+    let native, e = measure Array.(fun () -> let a = copy arr in sort E.compare a; a) in
+    let stable, _ = measure (fun () -> Array.stable_sort E.compare (Array.copy arr)) in
+    let revsort, _ = measure (fun () -> H.rev_sort ~dummy:0 arr) in
+    rev e; assert (arr = e);
     let log2 x = log x /. log 2. in
     let expected = float !size *. log2 (float !size) in
     Format.printf "%d,%d,%d,%d,%d,%d,%.0f,%.0f@." !size add heapify revsort
