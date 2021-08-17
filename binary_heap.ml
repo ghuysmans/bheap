@@ -128,4 +128,19 @@ module Make(X : Ordered) = struct
     let rec foldrec x i = if i >= n then x else foldrec (f d.(i) x) (succ i) in
     foldrec x0 0
 
+  let heapify data =
+    let n = Array.length data in
+    for i = n/2 - 1 downto 0 do
+      movedown data n i data.(i)
+    done;
+    {size = n; data; dummy = data.(0); min_cap = n}
+
+  let rev_sort data =
+    let {size; _} = heapify data in
+    for n = size - 1 downto 0 do
+      let tmp = data.(n) in
+      data.(n) <- data.(0);
+      movedown data n 0 tmp
+    done
+
 end

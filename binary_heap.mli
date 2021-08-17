@@ -75,4 +75,10 @@ module Make(X: Ordered) : sig
 
   val fold : (X.t -> 'a -> 'a) -> t -> 'a -> 'a
 
+  (** convert an array to a heap, in-place *)
+  val heapify : X.t array -> t
+
+  (** sort in the reverse order, in-place *)
+  val rev_sort : X.t array -> unit
+
 end
