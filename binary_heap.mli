@@ -69,6 +69,11 @@ module type H = sig
       raises [Empty] when [h] is empty; complexity $O(log(n))$ *)
   val pop_minimum : t -> elt
 
+  (** [remove_and_add x h] removes the minimum element of [h] and adds [x];
+      complexity $O(log(n))$. More efficient than calling [remove]
+      and [add]. *)
+  val remove_and_add : t -> elt -> unit
+
   (** usual iterators and combinators; elements are presented in
       arbitrary order *)
   val iter : (elt -> unit) -> t -> unit
