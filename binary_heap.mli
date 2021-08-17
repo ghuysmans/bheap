@@ -90,3 +90,10 @@ module type H = sig
 end
 
 module Make(X : Ordered) : H with type elt = X.t
+
+module Stream = Ostream
+
+(** [merge (module O) streams f] merges [streams] according to [O] and applies
+    [f] to each element. *)
+val merge : (module Ordered with type t = 'a) ->
+            'a Stream.cached_obj list -> ('a -> unit) -> unit

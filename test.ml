@@ -64,7 +64,7 @@ let rev_sorted arr =
                 arr.(i - 1) >= arr.(i) && f (i + 1) in
   f 1
 
-let () =
+let benchmark () =
   let size = ref 1 in
   Format.printf "n,add,heapify,revsort,native,stable,exp,ratio@.";
   while !size <= 1000000 do
@@ -79,9 +79,26 @@ let () =
     let native = measure (fun () -> Array.sort E.compare (Array.copy arr)) in
     let stable = measure (fun () -> Array.stable_sort E.compare (Array.copy arr)) in
     let revsort = measure (fun () -> H.rev_sort ~dummy:0 arr; assert (rev_sorted arr)) in
+    (* FIXME the empty list would pass this test *)
     let log2 x = log x /. log 2. in
     let expected = float !size *. log2 (float !size) in
     Format.printf "%d,%d,%d,%d,%d,%d,%.0f,%.0f@." !size add heapify revsort
       native stable expected (float revsort /. expected);
     size := !size * 10
   done
+
+let () =
+  let l =
+    let gen _ =
+      let a = Array.init 100 (fun _ -> Random.int 10000) in
+      Array.sort compare a;
+      Array.to_list a
+    in
+    Array.(init 10 gen |> to_list)
+  in
+  let r = ref [] in
+  let prepend x = r := x :: !r in
+  let f l = Binary_heap.Stream.(of_list l |> cache) in
+  Binary_heap.merge (module E) (List.map f l) prepend;
+  assert List.(sort compare (flatten l) = rev !r)
+  (* TODO benchmark *)

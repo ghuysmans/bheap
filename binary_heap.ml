@@ -202,3 +202,28 @@ module Make(X : Ordered) : H with type elt = X.t = struct
     done
 
 end
+
+module Stream = Ostream
+
+let merge (type t) (module O : Ordered with type t = t) l f =
+  let module H = Make (struct
+    type t = O.t Stream.cached_obj
+    let compare a b = O.compare a#current b#current
+  end) in
+  let dummy = object
+    (* FIXME? *)
+    method current = failwith "current"
+    method next = failwith "next"
+    method close = ()
+  end in
+  let h = H.heapify ~dummy (Array.of_list l) in
+  while not (H.is_empty h) do
+    let min = H.minimum h in
+    try
+      f min#current;
+      ignore @@ min#next;
+      H.remove_and_add h min
+    with End_of_file ->
+      min#close;
+      H.remove h
+  done
