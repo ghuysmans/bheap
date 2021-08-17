@@ -75,10 +75,10 @@ module Make(X : Ordered) = struct
     let rec moveup i =
       let fi = (i - 1) / 2 in
       if i > 0 && X.compare d.(fi) x > 0 then begin
-	d.(i) <- d.(fi);
-	moveup fi
+        d.(i) <- d.(fi);
+        moveup fi
       end else
-	d.(i) <- x
+        d.(i) <- x
     in
     moveup n;
     h.size <- n + 1
@@ -91,14 +91,14 @@ module Make(X : Ordered) = struct
     let j = 2 * i + 1 in
     if j < n then
       let j =
-	let j' = j + 1 in
-	if j' < n && X.compare d.(j') d.(j) < 0 then j' else j
+        let j' = j + 1 in
+        if j' < n && X.compare d.(j') d.(j) < 0 then j' else j
       in
       if X.compare d.(j) x < 0 then begin
         d.(i) <- d.(j);
         movedown d n j x
       end else
-	d.(i) <- x
+        d.(i) <- x
     else
       d.(i) <- x
 
